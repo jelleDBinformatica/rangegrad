@@ -34,7 +34,7 @@ testset = torchvision.datasets.OxfordIIITPet(
     root='./datasets/Oxford',
     split="trainval",
     transform=data_transforms['val'],
-    download=False,
+    download=True,
     target_transform=target_transform
 )
 

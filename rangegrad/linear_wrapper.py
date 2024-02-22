@@ -6,6 +6,7 @@ from conversion.utils import split_layer
 
 from typing import Union, Tuple
 
+
 class LinearWrapper(BaseWrapper):
     def __init__(self, original_module: nn.Module):
         super(LinearWrapper, self).__init__()

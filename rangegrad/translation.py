@@ -12,10 +12,10 @@ def translate_module(module: nn.Module):
     new_module = module
     if type(module) in [nn.Linear, nn.Conv2d, nn.Conv1d]:
         new_module = LinearWrapper(module)
-    if type(module) == nn.Sequential:
+    elif type(module) == nn.Sequential:
         new_module = translate_any_model(module)
         new_module = ModuleWrapper(new_module)
-    if type(module) == nn.ReLU:
+    elif type(module) == nn.ReLU:
         new_module = ReluWrapper()
     # TODO: put everything into ModuleWrapper
     else:
