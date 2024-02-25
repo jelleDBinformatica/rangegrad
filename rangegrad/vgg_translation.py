@@ -8,7 +8,7 @@ import torch
 
 class TranslatedVGG(ModuleWrapper):
     def __init__(self, original_module: vggn.VGG):
-        super(TranslatedVGG, self).__init__()
+        super(TranslatedVGG, self).__init__(original_module)
         self.original_module = original_module
         self.features = translate_any_model(original_module.features)
         self.avgpool = translate_any_model(original_module.avgpool)
