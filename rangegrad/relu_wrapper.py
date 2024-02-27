@@ -13,22 +13,22 @@ class ReluWrapper(BaseWrapper):
         self.original_module2 = nn.ReLU()
         self.factor = factor
 
-    def _scale_bounds(self, lb: torch.Tensor, ub: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        tensor_distance: torch.Tensor = ub - lb
-        tensor_distance *= self.factor
-        tensor_center: torch.Tensor = (ub + lb) / 2.0
-        new_lb = tensor_center - tensor_distance
-        new_ub = tensor_center + tensor_distance
+    def _scale_bounds(self, prev_y: torch.Tensor, lb: torch.Tensor, ub: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        new_lb = (self.factor * lb) + ((1-self.factor) * prev_y)
+        new_ub = (self.factor * ub) + ((1-self.factor) * prev_y)
         return new_lb, new_ub
 
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):
-        assert self.rangegrad_mode in ["forward", "lower", "upper", "boundse"], f"invalid rangegrad mode for relu: {self.rangegrad_mode}"
+        assert self.rangegrad_mode in ["forward", "lower", "upper", "bounds"], f"invalid rangegrad mode for relu: {self.rangegrad_mode}"
         if self.rangegrad_mode == "forward":
             return self.original_module(x)
         assert type(x) != torch.Tensor, "single tensor given as input for bound propagation in ReLU"
-        lb, ub = x
+        lb, prev_y, ub = x
+        lb, ub = self._scale_bounds(prev_y, lb, ub)
 
-        bounds = self.original_module(lb), self.original_module(ub)
-        # xlb, xub = bounds
-        # bounds = self._scale_bounds(xlb, xub)
+        bounds = (
+            self.original_module(lb),
+            self.original_module(prev_y),
+            self.original_module2(ub)
+        )
         return bounds

@@ -23,20 +23,6 @@ class Model1(nn.Module):
         return self.seq(x)
 
 
-class Model2(nn.Module):
-    def __init__(self):
-        super(Model2, self).__init__()
-        self.seq = nn.Sequential(
-            nn.Conv2d(1, 2, 2),
-            nn.ReLU(),
-            nn.Flatten(),
-            nn.Linear(2, 1),
-            nn.Softmax()
-        )
-
-    def forward(self, x):
-        x = torch.Tensor([[[0, 0], [0, 0]]])
-        return self.seq(x)
 
 
 x = torch.Tensor([2, 1])
@@ -49,20 +35,16 @@ xlb = x - e
 xub = x + e
 
 outputs_per_model = {
-    # Model1: [torch.Tensor([]), torch.Tensor([])],
-    Model2: [torch.Tensor([]), torch.Tensor([])],
+    Model1: [torch.Tensor([]), torch.Tensor([])]
 }
 
 if __name__ == "__main__":
     for constr, outputs in outputs_per_model.items():
         model: ModuleWrapper = translate_any_model(constr())
-        if constr == Model2:
-            for mod in model.modules():
-                print(mod)
 
         y = model(x)
         model.set_to_lower()
-        lb, ub = model.forward((xlb, xub))
+        lb, _, ub = model.forward((xlb, x, xub))
         lb.retain_grad()
         ub.retain_grad()
         # print(model.lower_bound(xlb, xub))
@@ -73,7 +55,7 @@ if __name__ == "__main__":
 
         lbg = copy.deepcopy(x.grad.detach())
 
-        lb, ub = model.forward((xlb, xub))
+        lb, _, ub = model.forward((xlb, x, xub))
         ub[0].backward()
         print(ub, x.grad)
         ubg = copy.deepcopy(x.grad.detach())

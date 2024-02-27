@@ -20,17 +20,12 @@ class LinearWrapper(BaseWrapper):
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):
         if self.rangegrad_mode == "forward":
             y = self.original_module(x)
-        elif self.rangegrad_mode == "bounds":
-            lb, ub = x
-            y = (self.lower_bound(lb, ub), self.upper_bound(lb, ub))
-        elif self.rangegrad_mode == "upper":
-            lb, ub = x
-            y = (self.lower_bound(lb, ub), self.upper_bound(lb, ub))
-        elif self.rangegrad_mode == "lower":
-            lb, ub = x
-            y = (self.lower_bound(lb, ub), self.upper_bound(lb, ub))
-        else:
-            raise AttributeError(f"rangegrad mode set to invalid value {self.rangegrad_mode}")
+            return y
+        try:
+            lb, prev_y, ub = x
+            y = (self.lower_bound(lb, ub), self.original_module(prev_y), self.upper_bound(lb, ub))
+        except Exception:
+            raise Exception("error occurred in linear bound propagation")
         return y
 
     def lower_bound(self, lower_input: torch.Tensor, upper_input: torch.Tensor):
