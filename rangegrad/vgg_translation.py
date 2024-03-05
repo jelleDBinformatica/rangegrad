@@ -5,6 +5,8 @@ from torchvision.models import vgg as vggn
 import torch.nn as nn
 import torch
 
+# can this be translated for any arbi
+
 
 class TranslatedVGG(ModuleWrapper):
     def __init__(self, original_module: vggn.VGG):

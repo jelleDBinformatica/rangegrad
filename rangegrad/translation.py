@@ -8,7 +8,7 @@ from rangegrad.relu_wrapper import ReluWrapper
 from rangegrad.custom_model import CustomModel
 
 
-def translate_module(module: nn.Module):
+def translate_module(module: nn.Module, scaling_factor: float = None):
     new_module = module
     if type(module) in [nn.Linear, nn.Conv2d, nn.Conv1d]:
         new_module = LinearWrapper(module)
@@ -16,20 +16,23 @@ def translate_module(module: nn.Module):
         new_module = translate_any_model(module)
         new_module = ModuleWrapper(new_module)
     elif type(module) == nn.ReLU:
-        new_module = ReluWrapper()
+        if scaling_factor is None:
+            new_module = ReluWrapper()
+        else:
+            new_module = ReluWrapper(factor=scaling_factor)
     # TODO: put everything into ModuleWrapper
     else:
         new_module = ModuleWrapper(module)
     return new_module
 
 
-def translate_any_model(model: nn.Module):
+def translate_any_model(model: nn.Module, scaling_factor: float = None):
     for name, module in model.named_children():
         if module == model:
             continue
         if isinstance(module, BaseWrapper):
             continue
-        new_module = translate_module(module)
+        new_module = translate_module(module, scaling_factor)
         model.__setattr__(name, new_module)
     return ModuleWrapper(model)
 
