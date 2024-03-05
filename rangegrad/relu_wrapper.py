@@ -26,7 +26,6 @@ def relu_scale_factor(lb: torch.Tensor, center: torch.Tensor, ub: torch.Tensor,
         overcrossed = int(overcrossed)
 
         if overcrossed > 0:
-            print("performing scaling in relu")
             scale, index = torch.kthvalue(-distances.flatten(), overcrossed)
             scale = -scale.item()
     return scale
