@@ -30,10 +30,13 @@ class LinearWrapper(BaseWrapper):
 
     def lower_bound(self, lower_input: torch.Tensor, upper_input: torch.Tensor):
         olb = self.neg_layer(upper_input) + self.pos_layer(lower_input)
-        # olb -= self.original_module.bias
+        if self.original_module.bias is not None:
+            olb -= self.original_module.bias
         return olb
 
     def upper_bound(self, lower_input: torch.Tensor, upper_input: torch.Tensor):
         oub = self.neg_layer(lower_input) + self.pos_layer(upper_input)
-        # oub -= self.original_module.bias
+
+        if self.original_module.bias is not None:
+            oub -= self.original_module.bias
         return oub

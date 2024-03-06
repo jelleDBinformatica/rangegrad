@@ -23,8 +23,6 @@ class Model1(nn.Module):
         return self.seq(x)
 
 
-
-
 x = torch.Tensor([2, 1])
 x = torch.autograd.Variable(x)
 x.requires_grad = True
@@ -41,14 +39,14 @@ outputs_per_model = {
 if __name__ == "__main__":
     for constr, outputs in outputs_per_model.items():
         model: ModuleWrapper = translate_any_model(constr())
+        model.set_debug(True)
 
         y = model(x)
         model.set_to_lower()
         lb, _, ub = model.forward((xlb, x, xub))
         lb.retain_grad()
         ub.retain_grad()
-        # print(model.lower_bound(xlb, xub))
-        # print(model.upper_bound(xlb, xub))
+
         print(y)
         lb[0].backward()
         print(lb, x.grad)

@@ -62,3 +62,11 @@ class ModuleWrapper(BaseWrapper):
                 continue
             if isinstance(module, BaseWrapper):
                 module.set_to_lower()
+
+    def set_debug(self, mode: bool):
+        super().set_debug(mode)
+        for module in self.modules():
+            if module == self:
+                continue
+            if isinstance(module, BaseWrapper):
+                module.set_debug(mode)

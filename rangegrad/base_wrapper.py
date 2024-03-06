@@ -7,6 +7,7 @@ class BaseWrapper(nn.Module):
         super(BaseWrapper, self).__init__()
         # "forward", "upper", "lower"
         self.rangegrad_mode: str = "forward"
+        self.debug: bool = False
 
     def upper_bound(self, lower_input, upper_input):
         raise NotImplementedError
@@ -25,3 +26,10 @@ class BaseWrapper(nn.Module):
 
     def set_to_bounds(self):
         self.rangegrad_mode = "bounds"
+
+    def set_debug(self, mode: bool):
+        self.debug = mode
+
+    def debug_print(self, content):
+        if self.debug:
+            print(content)
