@@ -20,7 +20,7 @@ def relu_scale_factor(lb: torch.Tensor, center: torch.Tensor, ub: torch.Tensor,
         L = center / (center - lb)
         U = center / (center - ub)
         # not sure about this, maybe U > 1?
-        distances = F.relu(L * (L < 1)) + F.relu(U * (U < 1))
+        distances = F.relu(L * (L < 1)) + F.relu(U * (U > 1))
 
         overcrossed = torch.sum(distances > 0).item() - allowed
         overcrossed = int(overcrossed)
