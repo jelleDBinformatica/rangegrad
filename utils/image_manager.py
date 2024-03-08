@@ -3,6 +3,7 @@ import os
 from typing import List
 
 import torch
+import numpy as np
 
 
 class ImageManager:
@@ -19,8 +20,11 @@ class ImageManager:
         :param image: tensor to be used as an image
         :return:
         """
-        image -= torch.min(image)
-        image /= torch.max(image)
+        print(image.shape)
+        image = np.linalg.norm(image, axis=2)
+        print(image)
+        image -= image.min()
+        image /= image.max()
         return image
 
     def prepare_dir(self, dir_name: str):
@@ -40,13 +44,13 @@ class ImageManager:
                    filename: str):
         self.prepare_dir(directory)
         filename = '/'.join([self.base_dir, directory, filename])
-        if self.normalize_image:
-            image = self._normalize(image)
         channels = image.shape[0]
         if channels == 1:
             image = torch.tile(image, (3, 1, 1))
 
         image = image.permute(1, 2, 0)
+        if self.normalize_image:
+            image = self._normalize(image)
         plt.imshow(image)
 
         # TODO: set title
@@ -65,7 +69,7 @@ class ImageManager:
 if __name__ == "__main__":
     t = ImageManager("./images")
     l = [
-        torch.rand((1, 100, 100)) for _ in range(5)
+        torch.rand((1, 200, 300)) for _ in range(5)
     ]
     t.save_image_batch(l, "temp", "temp")
 
