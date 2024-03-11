@@ -13,7 +13,7 @@ def translate_module(module: nn.Module, scaling_factor: float = None):
     if type(module) in [nn.Linear, nn.Conv2d, nn.Conv1d]:
         new_module = LinearWrapper(module)
     elif type(module) == nn.Sequential:
-        new_module = translate_any_model(module)
+        new_module = translate_any_model(module, scaling_factor)
         new_module = ModuleWrapper(new_module)
     elif type(module) == nn.ReLU:
         if scaling_factor is None:

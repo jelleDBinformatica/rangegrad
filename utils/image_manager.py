@@ -20,9 +20,7 @@ class ImageManager:
         :param image: tensor to be used as an image
         :return:
         """
-        print(image.shape)
         image = np.linalg.norm(image, axis=2)
-        print(image)
         image -= image.min()
         image /= image.max()
         return image
@@ -41,7 +39,8 @@ class ImageManager:
     def save_image(self,
                    image: torch.Tensor,
                    directory: str,
-                   filename: str):
+                   filename: str,
+                   title: str = ""):
         self.prepare_dir(directory)
         filename = '/'.join([self.base_dir, directory, filename])
         channels = image.shape[0]
@@ -52,6 +51,7 @@ class ImageManager:
         if self.normalize_image:
             image = self._normalize(image)
         plt.imshow(image)
+        plt.title(title)
 
         # TODO: set title
         plt.savefig(filename)
@@ -60,10 +60,11 @@ class ImageManager:
     def save_image_batch(self,
                          images: List[torch.Tensor],
                          directory: str,
-                         base_filename: str):
+                         base_filename: str,
+                         title: str = ""):
         for i, image in enumerate(images):
             new_filename = str(i) + "_" + base_filename
-            self.save_image(image, directory, new_filename)
+            self.save_image(image, directory, new_filename, title)
 
 
 if __name__ == "__main__":
@@ -71,7 +72,7 @@ if __name__ == "__main__":
     l = [
         torch.rand((1, 200, 300)) for _ in range(5)
     ]
-    t.save_image_batch(l, "temp", "temp")
+    t.save_image_batch(l, "temp", "temp", title="temp title")
 
 
 

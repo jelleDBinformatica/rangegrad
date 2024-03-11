@@ -15,6 +15,8 @@ def relu_scale_factor(self, lb: torch.Tensor, center: torch.Tensor, ub: torch.Te
         # get number of allowed elements
         # dim yi
         allowed = center.numel() * factor
+        self.debug_print((center.numel(), factor))
+        self.debug_print(("allowed", allowed))
 
         # get bound distances
         L = center / (center - lb)

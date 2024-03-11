@@ -9,9 +9,11 @@ from rangegrad.module_wrapper import ModuleWrapper
 class Model1(nn.Module):
     def __init__(self):
         super(Model1, self).__init__()
-        self.lin1 = nn.Linear(2, 2, bias=False)
+        self.lin1 = nn.Linear(2, 2, bias=True)
+        bias = torch.Tensor([1, 1])
         self.lin2 = nn.Linear(2, 1, bias=False)
-        self.lin1.load_state_dict({"weight": torch.Tensor([[1, 2], [-3, 4]])})
+        self.lin1.load_state_dict({"weight": torch.Tensor([[1, 2], [-3, 4]]),
+                                   "bias": bias})
         self.lin2.load_state_dict({"weight": torch.Tensor([[1, 2]])})
         self.seq = nn.Sequential(
             self.lin1,
@@ -48,7 +50,7 @@ if __name__ == "__main__":
         ub.retain_grad()
 
         print(y)
-        lb[0].backward()
+        lb.backward(torch.ones_like(lb))
         print(lb, x.grad)
 
         lbg = copy.deepcopy(x.grad.detach())
