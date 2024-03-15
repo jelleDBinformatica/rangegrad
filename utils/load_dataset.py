@@ -38,14 +38,18 @@ class ImagenetSampleDataset(Dataset):
         if idx >= len(self):
             return None
 
-        return {
-            'image': self.transform(self.streamed_dataset['image'][idx]),
-            'label': self.streamed_dataset['label'][idx],
-        }
+        return (
+            self.transform(self.streamed_dataset['image'][idx]),
+            self.streamed_dataset['label'][idx]
+        )
+        # return {
+        #     'image': self.transform(self.streamed_dataset['image'][idx]),
+        #     'label': self.streamed_dataset['label'][idx],
+        # }
 
-    def __iter__(self):
-        for idx in range(len(self)):
-            yield (self[idx][k] for k in self.streamed_dataset.keys())
+    # def __iter__(self):
+    #     for idx in range(len(self)):
+    #         yield (self[idx][k] for k in self.streamed_dataset.keys())
 
 
 def retrieve_dataset_sample(dataset: ds.IterableDataset, amount: int):
@@ -87,7 +91,8 @@ if __name__ == "__main__":
         # shuffle=True
     )
 
-    for x, label in bleh:
-        plt.imshow(x.permute((1, 2, 0)))
-        plt.show()
+    for x, label in testloader:
+        print(label)
+        # plt.imshow(x.permute((1, 2, 0)))
+        # plt.show()
 
