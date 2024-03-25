@@ -27,9 +27,15 @@ class BaseWrapper(nn.Module):
     def set_to_bounds(self):
         self.rangegrad_mode = "bounds"
 
+    def set_to_init(self):
+        self.rangegrad_mode = "init"
+
     def set_debug(self, mode: bool):
         self.debug = mode
 
     def debug_print(self, content):
         if self.debug:
             print(content)
+
+    def set_scaling_factor(self, factor: float):
+        ...

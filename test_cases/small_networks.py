@@ -4,6 +4,8 @@ import copy
 
 from rangegrad.translation import translate_any_model
 from rangegrad.module_wrapper import ModuleWrapper
+from rangegrad.explanations import rangegrad_explanation
+from utils.various import adaptive_cuda
 
 
 class Model1(nn.Module):
@@ -62,3 +64,6 @@ if __name__ == "__main__":
 
         print(ubg, lbg)
         print(ubg - lbg)
+
+        model = adaptive_cuda(model)
+        bleh = rangegrad_explanation(model, x, e)

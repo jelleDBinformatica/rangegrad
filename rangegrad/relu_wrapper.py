@@ -4,7 +4,8 @@ import torch.nn.functional as F
 
 from rangegrad.base_wrapper import BaseWrapper
 
-from typing import Union, Tuple, Callable
+from typing import Union, Tuple, Callable, Optional
+
 
 def relu_scale_factor(self, lb: torch.Tensor, center: torch.Tensor, ub: torch.Tensor,
                       factor: float) -> float:
@@ -41,18 +42,21 @@ class ReluWrapper(BaseWrapper):
                  factor: float = 0.05):
         super(ReluWrapper, self).__init__()
         self.original_module = nn.ReLU()
-        self.original_module2 = nn.ReLU()
+        self.lower_module = nn.ReLU()
+        self.upper_module = nn.ReLU()
         self.factor = factor
         self.scaling_func = scaling_func
 
-    def _scale_bounds(self, prev_y: torch.Tensor, lb: torch.Tensor, ub: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _scale_bounds(self, prev_y: torch.Tensor, lb: torch.Tensor, ub: torch.Tensor) -> Tuple[
+        torch.Tensor, torch.Tensor]:
         specific_factor = self.scaling_func(self, lb, prev_y, ub, self.factor)
-        new_lb = (specific_factor * lb) + ((1-specific_factor) * prev_y)
-        new_ub = (specific_factor * ub) + ((1-specific_factor) * prev_y)
+        new_lb = (specific_factor * lb) + ((1 - specific_factor) * prev_y)
+        new_ub = (specific_factor * ub) + ((1 - specific_factor) * prev_y)
         return new_lb, new_ub
 
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):
-        assert self.rangegrad_mode in ["forward", "lower", "upper", "bounds"], f"invalid rangegrad mode for relu: {self.rangegrad_mode}"
+        assert self.rangegrad_mode in ["forward", "lower", "upper",
+                                       "bounds"], f"invalid rangegrad mode for relu: {self.rangegrad_mode}"
         if self.rangegrad_mode == "forward":
             return self.original_module(x)
         assert type(x) != torch.Tensor, "single tensor given as input for bound propagation in ReLU"
@@ -60,8 +64,17 @@ class ReluWrapper(BaseWrapper):
         lb, ub = self._scale_bounds(prev_y, lb, ub)
 
         bounds = (
-            self.original_module(lb),
+            self.lower_module(lb),
             self.original_module(prev_y),
-            self.original_module2(ub)
+            self.upper_module(ub)
         )
         return bounds
+
+    def set_scaling_factor(self, factor: float):
+        self.factor = factor
+
+
+
+
+
+
