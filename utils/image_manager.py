@@ -50,7 +50,7 @@ class ImageManager:
         image = image.permute(1, 2, 0)
         if self.normalize_image:
             image = self._normalize(image)
-        plt.imshow(image)
+        plt.imshow(image, cmap=plt.cm.Reds)
         plt.title(title)
 
         # TODO: set title

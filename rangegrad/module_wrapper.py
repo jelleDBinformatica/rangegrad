@@ -73,6 +73,14 @@ class ModuleWrapper(BaseWrapper):
             if isinstance(module, BaseWrapper):
                 module.set_to_bounds()
 
+    def set_to_explin(self):
+        super().set_to_explin()
+        for module in self.modules():
+            if module == self:
+                continue
+            if isinstance(module, BaseWrapper):
+                module.set_to_explin()
+
     def set_to_init(self):
         super().set_to_init()
         for module in self.modules():
@@ -95,3 +103,6 @@ class ModuleWrapper(BaseWrapper):
                 continue
             if isinstance(module, BaseWrapper):
                 module.set_scaling_factor(factor)
+
+    def get_device(self):
+        return self.original_module.get_device()

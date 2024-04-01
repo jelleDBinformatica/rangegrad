@@ -5,8 +5,6 @@ from torchvision.models import vgg as vggn
 import torch.nn as nn
 import torch
 
-# can this be translated for any arbi
-
 
 class TranslatedVGG(ModuleWrapper):
     def __init__(self, original_module: vggn.VGG):
@@ -28,6 +26,9 @@ class TranslatedVGG(ModuleWrapper):
                 y = (mod(lb), mod(ub))
             x = y
         return y
+
+    def set_scaling_factor(self, factor: float):
+        super().set_scaling_factor(factor)
 
 
 

@@ -37,5 +37,8 @@ class BaseWrapper(nn.Module):
         if self.debug:
             print(content)
 
+    def set_to_explin(self):
+        self.rangegrad_mode = "explin"
+
     def set_scaling_factor(self, factor: float):
         ...

@@ -4,10 +4,11 @@ import copy
 from typing import Optional
 
 from rangegrad.module_wrapper import ModuleWrapper
+from rangegrad.vgg_translation import TranslatedVGG
 from utils.various import adaptive_cuda
 
 def rangegrad_explanation(
-        model: ModuleWrapper,
+        model: TranslatedVGG,
         x: torch.Tensor,
         bound_range: float,
         scaling_factor: Optional[float] = None
@@ -33,7 +34,8 @@ def rangegrad_explanation(
             ub = x + bound_range
         relevant_input = [lb, ub][bound_index]
         bounds = model((lb, x, ub))
-        relevant_bound = torch.flatten(bounds[bound_index])
+
+        relevant_bound = torch.flatten(bounds[2*bound_index])
         relevant_bound.retain_grad()
 
         relevant_bound.backward(torch.ones_like(relevant_bound))
