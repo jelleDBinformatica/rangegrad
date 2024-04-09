@@ -126,7 +126,6 @@ class ReluWrapper(Rangegrad_ReluWrapper):
         yub = ub - mi
         frac = F.relu(Mi) - F.relu(mi)
         frac /= (Mi - mi)
-        print("frac", frac)
         x_u = frac * yub + F.relu(mi)
         x_l = F.relu(lb)
 

@@ -19,7 +19,6 @@ class LinearWrapper(BaseWrapper):
         self.pos_layer = pos_layer
 
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):
-        print(x)
         if self.rangegrad_mode == "forward":
             y = self.original_module(x)
             return y
@@ -30,7 +29,6 @@ class LinearWrapper(BaseWrapper):
         except Exception as e:
             print(e)
             raise Exception("error occurred in linear bound propagation")
-        print(y)
         return y
 
     def bounds(self, lb: torch.Tensor, x:torch.Tensor, ub: torch.Tensor):
