@@ -115,6 +115,7 @@ class ReluWrapper(Rangegrad_ReluWrapper):
             return super().forward(x)
         # now we can assume explin propagation, which also requires the previous module
         lb, x_, ub = x
+        lb, ub = self._scale_bounds(x_, lb, ub)
         # xiM = ub
         # xim = lb
 
