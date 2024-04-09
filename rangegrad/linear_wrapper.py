@@ -19,17 +19,18 @@ class LinearWrapper(BaseWrapper):
         self.pos_layer = pos_layer
 
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):
+        print(x)
         if self.rangegrad_mode == "forward":
             y = self.original_module(x)
             return y
         try:
             lb, prev_y, ub = x
             y = self.bounds(lb, prev_y, ub)
-            # y = (self.lower_bound(lb, ub), self.original_module(prev_y), self.upper_bound(lb, ub))
             self.debug_print(y[2])
         except Exception as e:
             print(e)
             raise Exception("error occurred in linear bound propagation")
+        print(y)
         return y
 
     def bounds(self, lb: torch.Tensor, x:torch.Tensor, ub: torch.Tensor):
@@ -60,6 +61,7 @@ class LinearWrapper(BaseWrapper):
         return oub
 
     def conv_bounds(self, lower_input: torch.Tensor, x: torch.Tensor, upper_input: torch.Tensor):
+        # positive weights
         W_p = F.relu(self.original_module.weight)
         # OPPOSITE of negative weights
         W_n = F.relu(-self.original_module.weight)

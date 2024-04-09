@@ -36,11 +36,11 @@ def relu_scale_factor(self, lb: torch.Tensor, center: torch.Tensor, ub: torch.Te
     return scale
 
 
-class ReluWrapper(BaseWrapper):
+class Rangegrad_ReluWrapper(BaseWrapper):
     def __init__(self,
                  scaling_func: Callable = relu_scale_factor,
                  factor: float = 0.05):
-        super(ReluWrapper, self).__init__()
+        super(Rangegrad_ReluWrapper, self).__init__()
         self.original_module = nn.ReLU()
         self.lower_module = nn.ReLU()
         self.upper_module = nn.ReLU()
@@ -55,7 +55,7 @@ class ReluWrapper(BaseWrapper):
         return new_lb, new_ub
 
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):
-        assert self.rangegrad_mode in ["forward", "lower", "upper",
+        assert self.rangegrad_mode in ["forward",
                                        "bounds"], f"invalid rangegrad mode for relu: {self.rangegrad_mode}"
         if self.rangegrad_mode == "forward":
             return self.original_module(x)
@@ -74,12 +74,34 @@ class ReluWrapper(BaseWrapper):
         self.factor = factor
 
 
-class ExplinReLUWrapper(ReluWrapper):
-    """
-    Generally this class will be able to do the same, but using an 'explin' pass,
-    this module will compose its upper and lower modules according to the data and previous model
-    """
+def get_bound_argmax(mask: Tuple[torch.Tensor, torch.Tensor], composition_matrix):
+    summed_layer = torch.sum(composition_matrix, 0)
 
+    gt = torch.gt(summed_layer, 0).int()
+    gt = gt.unsqueeze(0)
+
+    bound_tensor = torch.concat((mask[0], mask[1]))
+    choice_tensor = torch.cat((1 - gt, gt), 0)
+
+    xiM = torch.sum(bound_tensor * choice_tensor, 0)
+    # xim = torch.sum(bound_tensor * (1 - choice_tensor), 0)
+    return xiM
+
+
+def get_bound_argmin(mask: Tuple[torch.Tensor, torch.Tensor], composition_matrix):
+    summed_layer = torch.sum(composition_matrix, 0)
+
+    gt = torch.gt(summed_layer, 0).int()
+    gt = gt.unsqueeze(0)
+
+    bound_tensor = torch.concat((mask[0], mask[1]))
+    choice_tensor = torch.cat((1 - gt, gt), 0)
+
+    xim = torch.sum(bound_tensor * (1 - choice_tensor), 0)
+    return xim
+
+
+class ReluWrapper(Rangegrad_ReluWrapper):
     def __init__(self, scaling_func: Callable = relu_scale_factor, factor: float = 0.05):
         super().__init__(scaling_func, factor)
 
@@ -87,11 +109,31 @@ class ExplinReLUWrapper(ReluWrapper):
                 previous_module: Optional[BaseWrapper] = None):
         assert self.rangegrad_mode in [
             "forward", "bounds", "explin"
-        ], f"ExplinReLUWrapper got invalid mode {self.rangegrad_mode}"
+        ], f"Explin ReLUWrapper got invalid mode {self.rangegrad_mode}"
+
         if self.rangegrad_mode != "explin":
             return super().forward(x)
-
         # now we can assume explin propagation, which also requires the previous module
-        if previous_module is None:
-            print("panic?")
+        lb, x_, ub = x
+        # xiM = ub
+        # xim = lb
+
+        Mi = torch.max(ub, dim=-1).values.unsqueeze(-1)
+
+        mi = torch.min(lb, dim=-1).values.unsqueeze(-1)
+
+
+        yub = ub - mi
+        frac = F.relu(Mi) - F.relu(mi)
+        frac /= (Mi - mi)
+        print("frac", frac)
+        x_u = frac * yub + F.relu(mi)
+        x_l = F.relu(lb)
+
+        return (
+            x_l,
+            F.relu(x_),
+            x_u
+        )
+
 

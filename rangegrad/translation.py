@@ -4,8 +4,13 @@ import torch
 from rangegrad.base_wrapper import BaseWrapper
 from rangegrad.linear_wrapper import LinearWrapper
 from rangegrad.module_wrapper import ModuleWrapper
-from rangegrad.relu_wrapper import ReluWrapper
 from rangegrad.custom_model import CustomModel
+
+USE_EXPLIN = True
+if USE_EXPLIN:
+    from explin.relu_wrapper import ReluWrapper
+else:
+    from rangegrad.relu_wrapper import ReluWrapper
 
 
 def translate_module(module: nn.Module, scaling_factor: float = None):

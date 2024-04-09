@@ -16,7 +16,6 @@ class ModuleWrapper(BaseWrapper):
             return self.original_module(x)
         try:
             y = self.original_module(x)
-            return y
         except Exception:
             lb, prev_y, ub = x
             y = (
@@ -24,7 +23,7 @@ class ModuleWrapper(BaseWrapper):
                 self.original_module(prev_y),
                 self.original_module(ub)
             )
-            return y
+        return y
 
     def upper_bound(self, lower_input, upper_input):
         if isinstance(self.original_module, BaseWrapper):
