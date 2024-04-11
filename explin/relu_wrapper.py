@@ -119,16 +119,33 @@ class ReluWrapper(Rangegrad_ReluWrapper):
         # xiM = ub
         # xim = lb
 
-        Mi = torch.max(ub, dim=-1).values.unsqueeze(-1)
+        # Mi = torch.max(ub, dim=-1).values.unsqueeze(-1)
+        #
+        # mi = torch.min(lb, dim=-1).values.unsqueeze(-1)
+        #
+        #
+        # yub = ub - mi
+        # frac = F.relu(Mi) - F.relu(mi)
+        # frac /= (Mi - mi)
+        # x_u = frac * yub + F.relu(mi)
+        # x_l = F.relu(lb)
 
-        mi = torch.min(lb, dim=-1).values.unsqueeze(-1)
+        # print(x_l, x_u)
+        with torch.no_grad():
+            slope = torch.zeros(x_.shape) + ub
+            slope_denom = ub - lb
+            print(slope_denom)
+            slope = slope / slope_denom
+            u_slope = torch.nan_to_num(slope, 0, 1, 0)
 
-
-        yub = ub - mi
-        frac = F.relu(Mi) - F.relu(mi)
-        frac /= (Mi - mi)
-        x_u = frac * yub + F.relu(mi)
+            bias_enabler = torch.gt(ub, 0) * torch.le(lb, 0)
+            u_bias = - u_slope * lb * bias_enabler
+        print(u_slope)
+        x_u = u_slope * ub + u_bias
         x_l = F.relu(lb)
+
+        # print(F.linear(x_u, u_slope, bias=bias))
+        # slope = torch.zeros(size=x.shape[0])
 
         return (
             x_l,
