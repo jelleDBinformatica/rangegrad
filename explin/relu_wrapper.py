@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from rangegrad.base_wrapper import BaseWrapper
+from utils.various import adaptive_cuda
 
 from typing import Union, Tuple, Callable, Optional
 
@@ -132,7 +133,7 @@ class ReluWrapper(Rangegrad_ReluWrapper):
 
         # print(x_l, x_u)
         with torch.no_grad():
-            slope = torch.zeros(x_.shape) + ub
+            slope = adaptive_cuda(torch.zeros(x_.shape)) + ub
             slope_denom = ub - lb
             slope = slope / slope_denom
             u_slope = torch.nan_to_num(slope, 0, 1, 0)
