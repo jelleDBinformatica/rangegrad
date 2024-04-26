@@ -38,9 +38,19 @@ class ImagenetSampleDataset(Dataset):
         if idx >= len(self):
             return None
 
+        im = self.streamed_dataset['image'][idx]
+        label = self.streamed_dataset['label'][idx]
+        im = T.ToTensor()(im)
+
+        if im.shape[0] == 1:
+            im = im.tile((3, 1, 1))
+
+        im = T.ToPILImage()(im)
+
         return (
-            self.transform(self.streamed_dataset['image'][idx]),
-            self.streamed_dataset['label'][idx]
+            self.transform(im),
+            label
+
         )
         # return {
         #     'image': self.transform(self.streamed_dataset['image'][idx]),
@@ -80,13 +90,13 @@ if __name__ == "__main__":
     # sample = retrieve_dataset_sample(dataset, 10)
     #
     # bleh = ImagenetSampleDataset(sample, data_transforms["val"])
-    bleh = setup_imagenet_sample(10, data_transforms["val"])
+    bleh = setup_imagenet_sample(100, data_transforms["val"])
 
-    samples = choices(range(len(bleh)), k=3)
+    samples = choices(range(len(bleh)), k=100)
     testloader = torch.utils.data.DataLoader(
         bleh,
         batch_size=1,
-        num_workers=2,
+        num_workers=1   ,
         sampler=samples
         # shuffle=True
     )
