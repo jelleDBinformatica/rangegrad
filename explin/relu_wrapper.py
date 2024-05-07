@@ -138,7 +138,8 @@ class ReluWrapper(Rangegrad_ReluWrapper):
             slope = slope / slope_denom
             u_slope = torch.nan_to_num(slope, 0, 1, 0)
 
-            bias_enabler = torch.gt(ub, 0) * torch.le(lb, 0)
+            # bias_enabler = torch.gt(ub, 0) * torch.le(lb, 0)
+            bias_enabler = torch.gt(x_, 0)
             u_bias = - u_slope * lb * bias_enabler
         x_u = u_slope * ub + u_bias
         x_l = F.relu(lb)
