@@ -60,9 +60,9 @@ class LinearWrapper(BaseWrapper):
 
     def conv_bounds(self, lower_input: torch.Tensor, x: torch.Tensor, upper_input: torch.Tensor):
         # positive weights
-        W_p = F.relu(self.original_module.weight)
+        W_p = nn.ReLU()(self.original_module.weight)
         # OPPOSITE of negative weights
-        W_n = F.relu(-self.original_module.weight)
+        W_n = nn.ReLU()(-self.original_module.weight)
 
         # conv_module
         cm = self.original_module
