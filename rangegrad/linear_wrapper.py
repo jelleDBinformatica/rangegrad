@@ -14,9 +14,14 @@ class LinearWrapper(BaseWrapper):
         if type(original_module) not in [nn.Linear, nn.Conv2d]:
             raise TypeError(f"original layer type {type(original_module)} not suitable for wrapper.")
         self.original_module = original_module
-        neg_layer, pos_layer = split_layer(original_module)
-        self.neg_layer = neg_layer
-        self.pos_layer = pos_layer
+        # neg_layer, pos_layer = split_layer(original_module)
+        # self.neg_layer = neg_layer
+        # self.pos_layer = pos_layer
+
+        with torch.no_grad():
+            self.neg_weights = F.relu(-original_module.weight.data).detach()
+            self.pos_weights = F.relu(original_module.weight.data).detach()
+            self.bias = original_module.bias.clone()
 
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):
         if self.rangegrad_mode == "forward":
@@ -25,7 +30,6 @@ class LinearWrapper(BaseWrapper):
         try:
             lb, prev_y, ub = x
             y = self.bounds(lb, prev_y, ub)
-            self.debug_print(y[2])
         except Exception as e:
             print(e)
             raise Exception("error occurred in linear bound propagation")
@@ -42,27 +46,28 @@ class LinearWrapper(BaseWrapper):
             exit()
 
     def lower_bound(self, lower_input: torch.Tensor, upper_input: torch.Tensor):
-        olb = self.neg_layer(upper_input) + self.pos_layer(lower_input)
-        self.debug_print(("pre bias", olb))
-        if self.original_module.bias is not None:
-            self.debug_print(f'adding bias of {self.original_module.bias} to lb')
-            olb -= self.original_module.bias
+        # olb = self.neg_layer(upper_input) + self.pos_layer(lower_input)
+        # if self.original_module.bias is not None:
+        #     self.debug_print(f'adding bias of {self.original_module.bias} to lb')
+        #     olb -= self.original_module.bias
+        olb = F.linear(lower_input, self.pos_weights, self.bias) + F.linear(upper_input, self.neg_weights)
         return olb
 
     def upper_bound(self, lower_input: torch.Tensor, upper_input: torch.Tensor):
-        oub = self.neg_layer(lower_input) + self.pos_layer(upper_input)
-
-        if self.original_module.bias is not None:
-            self.debug_print(f'adding bias of {self.original_module.bias} to ub')
-            oub -= self.original_module.bias
-
+        # oub = self.neg_layer(lower_input) + self.pos_layer(upper_input)
+        #
+        # if self.original_module.bias is not None:
+        #     self.debug_print(f'adding bias of {self.original_module.bias} to ub')
+        #     oub -= self.original_module.bias
+        oub = F.linear(upper_input, self.pos_weights, self.bias) + F.linear(lower_input, self.neg_weights)
         return oub
 
     def conv_bounds(self, lower_input: torch.Tensor, x: torch.Tensor, upper_input: torch.Tensor):
         # positive weights
-        W_p = nn.ReLU()(self.original_module.weight)
-        # OPPOSITE of negative weights
-        W_n = nn.ReLU()(-self.original_module.weight)
+        with torch.no_grad():
+            W_p = nn.ReLU()(self.original_module.weight)
+            # OPPOSITE of negative weights
+            W_n = nn.ReLU()(-self.original_module.weight)
 
         # conv_module
         cm = self.original_module

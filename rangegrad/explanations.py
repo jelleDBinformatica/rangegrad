@@ -12,35 +12,41 @@ def rangegrad_explanation(
         model: TranslatedVGG,
         x: torch.Tensor,
         bound_range: float,
-        scaling_factor: Optional[float] = None
+        scaling_factor: Optional[float] = None,
+        target: Optional[int] = None
 ):
     if scaling_factor is not None:
         model.set_scaling_factor(factor=scaling_factor)
-    output_bounds = []
-    for bound_index in range(2):
-        x = torch.autograd.Variable(x, requires_grad=True)
-        x.requires_grad = True
-        if torch.cuda.is_available():
-            x = adaptive_cuda(x)
-        x.retain_grad()
+    x = torch.autograd.Variable(x)
+    x.requires_grad = True
+    x.retain_grad()
+    model.set_to_forward()
+    x1 = model(x)
+    x1.retain_grad()
+    if target is None:
+        target = torch.argmax(x1).item()
+    y = torch.flatten(x1)[target]
 
-        # first, get supposed output of model
-        model.set_to_forward()
-        y1 = model(x)
+    OH = adaptive_cuda(torch.zeros((1, 1000)))
+    OH[0, target] = 1
+    y.backward()
 
-        model.set_to_bounds()
+    prediction_grad = copy.deepcopy(torch.sum(x.grad, 1)).detach()
 
-        with torch.no_grad():
-            lb = x - bound_range
-            ub = x + bound_range
-        relevant_input = [lb, ub][bound_index]
-        bounds = model((lb, x, ub))
+    model.set_to_bounds()
 
-        relevant_bound = torch.flatten(bounds[2*bound_index])
-        relevant_bound.retain_grad()
+    diff_matrix = torch.full(x.shape, float(bound_range), requires_grad=True)
+    diff_matrix = adaptive_cuda(diff_matrix)
+    diff_matrix.retain_grad()
 
-        relevant_bound.backward(torch.ones_like(relevant_bound))
-        output_bounds.append(copy.deepcopy(x.grad).detach())
-    grad_diff = output_bounds[1] - output_bounds[0]
-    grad_diff = torch.sum(grad_diff, 1)
-    return grad_diff.detach()
+    lb = x - diff_matrix
+    ub = x + diff_matrix
+
+    bounds = model((lb, x, ub))
+
+    f = torch.sum((bounds[2] - bounds[0]) * OH)
+
+    f.backward()
+    grad_diff = diff_matrix.grad.data.squeeze().detach()
+
+    return prediction_grad.detach(), grad_diff.detach()
