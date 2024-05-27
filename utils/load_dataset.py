@@ -23,7 +23,12 @@ data_transforms = {
         T.Normalize(mean=[0, 0, 0], std=[1 / 0.229, 1 / 0.224, 1 / 0.225]),
         T.Normalize(mean=[-0.485, -0.456, -0.406], std=[1, 1, 1]),
     ]),
+    'tiling': T.Compose([
+        T.Resize((224, 224)),
+        T.ToTensor(),
+    ])
 }
+
 
 class ImagenetSampleDataset(Dataset):
     def __init__(self, streamed_dataset, transform):
@@ -86,10 +91,7 @@ def setup_imagenet_sample(sample_size: int, transforms):
 
 
 if __name__ == "__main__":
-    # dataset = prepare_dataset_stream()
-    # sample = retrieve_dataset_sample(dataset, 10)
-    #
-    # bleh = ImagenetSampleDataset(sample, data_transforms["val"])
+
     bleh = setup_imagenet_sample(100, data_transforms["val"])
 
     samples = choices(range(len(bleh)), k=100)
