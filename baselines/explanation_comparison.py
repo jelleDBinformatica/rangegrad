@@ -32,6 +32,11 @@ def compare_explanations_precision(expl: np.ndarray, target: np.ndarray):
     return precision
 
 
-def get_consensus(targets: List[np.ndarray]):
+def get_consensus(targets: List[np.ndarray],
+                  boolean_choice: bool = True):
     consensus = sum(targets) / len(targets)
+    if boolean_choice:
+        temp_idx = consensus >= 0.5
+        consensus[temp_idx] = 1
+        consensus[~temp_idx] = 0
     return np.asarray(consensus)

@@ -27,8 +27,8 @@ def occlusion_explanation(net: nn.Module,
                           y: int,
                           normalize: bool = False):
     expl = Occlusion(net)
-    expl_image = expl.attribute(x, target=y, strides=(3,25,25), sliding_window_shapes=(3,50,50))
-    expl_image = expl_image.cpu().detach().numpy().sum(axis=0).sum(axis=0)
+    expl_image = expl.attribute(x, target=y, strides=(3, 25, 25), sliding_window_shapes=(3, 50, 50))
+    expl_image = expl_image.cpu().detach().numpy().sum(axis=0)
     if normalize:
         expl_image = np.linalg.norm(expl_image, axis=0)
 
