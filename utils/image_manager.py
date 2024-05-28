@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import os
-from typing import List
+from typing import List, Optional
 
 import torch
 import numpy as np
@@ -40,7 +40,10 @@ class ImageManager:
                    image: torch.Tensor,
                    directory: str,
                    filename: str,
-                   title: str = ""):
+                   title: str = "",
+                   normalize: Optional[bool] = None):
+        if normalize is None:
+            normalize = self.normalize_image
         self.prepare_dir(directory)
         filename = '/'.join([self.base_dir, directory, filename])
         channels = image.shape[0]
@@ -48,9 +51,10 @@ class ImageManager:
             image = torch.tile(image, (3, 1, 1))
 
         image = image.permute(1, 2, 0)
-        if self.normalize_image:
+        if normalize:
             image = self._normalize(image)
         # plt.imshow(image, cmap=plt.cm.Reds)
+        plt.axis('off')
         plt.imshow(image)
         plt.title(title)
 
@@ -62,10 +66,11 @@ class ImageManager:
                          images: List[torch.Tensor],
                          directory: str,
                          base_filename: str,
-                         title: str = ""):
+                         title: str = "",
+                         normalize: Optional[bool] = None):
         for i, image in enumerate(images):
             new_filename = str(i) + "_" + base_filename
-            self.save_image(image, directory, new_filename, title)
+            self.save_image(image, directory, new_filename, title, normalize)
 
 
 if __name__ == "__main__":
