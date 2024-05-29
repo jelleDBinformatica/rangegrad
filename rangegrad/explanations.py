@@ -30,8 +30,9 @@ def rangegrad_explanation(
         target = torch.argmax(x1).item()
     y = torch.flatten(x1)[target]
 
-    OH = adaptive_cuda(torch.zeros((1, 1000), requires_grad=True))
+    OH = adaptive_cuda(torch.zeros((1, 1000)))
     OH[0, target] = 1
+    OH.requires_grad = True
     y.backward()
 
     prediction_grad = copy.deepcopy(torch.sum(x.grad, 1)).detach()
