@@ -133,17 +133,21 @@ class ReluWrapper(Rangegrad_ReluWrapper):
 
         # print(x_l, x_u)
         # with torch.no_grad():
-        slope = adaptive_cuda(torch.zeros(x_.shape)) + ub
-        slope_denom = ub - lb
+        ux = torch.max(ub)
+        lx = torch.min(lb)
+
+        slope = adaptive_cuda(torch.zeros(x_.shape)) + ux
+        slope_denom = ux - lx
         self.debug_print(slope_denom.max())
         slope = slope / slope_denom
         u_slope = torch.nan_to_num(slope, 0, 1, 0)
 
         # bias_enabler = torch.gt(ub, 0) * torch.le(lb, 0)
         bias_enabler = torch.gt(x_, 0)
-        u_bias = - u_slope * lb * bias_enabler
+        u_bias = - u_slope * lx * bias_enabler
+
         x_u = u_slope * ub + u_bias
-        x_l = F.relu(lb)
+        x_l = lb * torch.gt(x_, 0)
 
         # print(F.linear(x_u, u_slope, bias=bias))
         # slope = torch.zeros(size=x.shape[0])
