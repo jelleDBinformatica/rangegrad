@@ -13,7 +13,8 @@ def rangegrad_explanation(
         x: torch.Tensor,
         bound_range: float,
         scaling_factor: Optional[float] = None,
-        target: Optional[int] = None
+        target: Optional[int] = None,
+        explin_override: bool = False
 ):
     if scaling_factor is not None:
         model.set_scaling_factor(factor=scaling_factor)
@@ -33,7 +34,10 @@ def rangegrad_explanation(
 
     prediction_grad = copy.deepcopy(torch.sum(x.grad, 1)).detach()
 
-    model.set_to_bounds()
+    if explin_override:
+        model.set_to_explin()
+    else:
+        model.set_to_bounds()
 
     diff_matrix = torch.full(x.shape, float(bound_range), requires_grad=True)
     diff_matrix = adaptive_cuda(diff_matrix)
