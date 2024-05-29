@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from rangegrad.module_wrapper import BaseWrapper
 from conversion.utils import split_layer
+from utils.various import adaptive_cuda
 
 from typing import Union, Tuple
 
@@ -19,8 +20,8 @@ class LinearWrapper(BaseWrapper):
         # self.pos_layer = pos_layer
 
         with torch.no_grad():
-            self.neg_weights = -F.relu(-original_module.weight.data).detach()
-            self.pos_weights = F.relu(original_module.weight.data).detach()
+            self.neg_weights = adaptive_cuda(-F.relu(-original_module.weight.data).detach())
+            self.pos_weights = adaptive_cuda(F.relu(original_module.weight.data).detach())
             self.bias = original_module.bias.clone()
 
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):

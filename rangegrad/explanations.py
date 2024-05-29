@@ -21,6 +21,7 @@ def rangegrad_explanation(
     x = torch.autograd.Variable(x)
     x.requires_grad = True
     x.retain_grad()
+    x = adaptive_cuda(x)
     model.set_to_forward()
     x1 = model(x)
     x1.retain_grad()
