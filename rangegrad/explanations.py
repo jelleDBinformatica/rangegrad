@@ -30,7 +30,7 @@ def rangegrad_explanation(
         target = torch.argmax(x1).item()
     y = torch.flatten(x1)[target]
 
-    OH = adaptive_cuda(torch.zeros((1, 1000)))
+    OH = adaptive_cuda(torch.zeros((1, 1000), requires_grad=True))
     OH[0, target] = 1
     y.backward()
 
