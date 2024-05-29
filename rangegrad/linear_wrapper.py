@@ -19,7 +19,8 @@ class LinearWrapper(BaseWrapper):
         # self.pos_layer = pos_layer
 
         with torch.no_grad():
-            self.neg_weights = F.relu(-original_module.weight.data).detach()
+            self.neg_weights = -F.relu(-original_module.weight.data).detach()
+            assert all(self.neg_weights <= 0), "found positive weights in negative weights"
             self.pos_weights = F.relu(original_module.weight.data).detach()
             self.bias = original_module.bias.clone()
 
