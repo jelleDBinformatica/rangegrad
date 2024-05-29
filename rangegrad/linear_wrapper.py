@@ -20,9 +20,9 @@ class LinearWrapper(BaseWrapper):
         # self.pos_layer = pos_layer
 
         with torch.no_grad():
-            self.neg_weights = adaptive_cuda(-F.relu(-original_module.weight.data).detach())
-            self.pos_weights = adaptive_cuda(F.relu(original_module.weight.data).detach())
-            self.bias = original_module.bias.clone()
+            self.neg_weights = adaptive_cuda(-F.relu(-original_module.weight.data))
+            self.pos_weights = adaptive_cuda(F.relu(original_module.weight.data))
+            self.bias = adaptive_cuda(original_module.bias.clone())
 
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):
         if self.rangegrad_mode == "forward":
