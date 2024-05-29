@@ -137,9 +137,11 @@ class ReluWrapper(Rangegrad_ReluWrapper):
         # lx = torch.min(lb)
 
         slope = adaptive_cuda(torch.zeros(x_.shape)) + ub
+
         slope_denom = ub - lb
         slope = slope / slope_denom
         u_slope = torch.nan_to_num(slope, 0, 1, 0)
+        u_slope = torch.clamp(u_slope, 0, 1)
         self.debug_print(f'slope range: {u_slope.max()}, {u_slope.min()}')
 
         bias_enabler = torch.gt(ub, 0) * torch.le(lb, 0)
