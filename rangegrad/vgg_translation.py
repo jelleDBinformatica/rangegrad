@@ -22,8 +22,8 @@ class TranslatedVGG(ModuleWrapper):
             try:
                 y = mod(x)
             except Exception:
-                lb, ub = x
-                y = (mod(lb), mod(ub))
+                lb, x_, ub = x
+                y = (mod(lb), mod(x_), mod(ub))
             x = y
         return y
 
