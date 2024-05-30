@@ -22,20 +22,16 @@ def rangegrad_explanation(
     x.requires_grad = True
     x.retain_grad()
     x = adaptive_cuda(x)
-    model.set_to_forward()
+
     model.zero_grad()
-    x1 = model(x)
-    x1.retain_grad()
     if target is None:
         with torch.no_grad():
+            x1 = model(x)
             target = torch.argmax(x1).item()
-    y = torch.flatten(x1)[target]
 
     OH = adaptive_cuda(torch.zeros((1, 1000)))
     OH[0, target] = 1
-    y.backward()
 
-    prediction_grad = copy.deepcopy(torch.sum(x.grad, 1)).detach()
     model.zero_grad()
 
     if explin_override:
@@ -57,4 +53,4 @@ def rangegrad_explanation(
     f.backward()
     grad_diff = diff_matrix.grad.data.squeeze().detach()
 
-    return prediction_grad.detach(), grad_diff.detach()
+    return grad_diff.detach()
