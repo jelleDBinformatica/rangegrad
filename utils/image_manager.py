@@ -20,7 +20,7 @@ class ImageManager:
         :param image: tensor to be used as an image
         :return:
         """
-        image = np.linalg.norm(image, axis=0)
+        image = np.linalg.norm(image, axis=2)
         image -= image.min()
         image /= image.max()
         return image
