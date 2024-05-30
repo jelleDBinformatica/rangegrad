@@ -51,7 +51,7 @@ def rangegrad_explanation(
 
     f = (bounds[2] - bounds[0])
 
-    f.backward(OH)
+    f.backward(torch.ones_like(f))
     grad_diff = diff_matrix.grad.data.squeeze().detach()
 
     return grad_diff
