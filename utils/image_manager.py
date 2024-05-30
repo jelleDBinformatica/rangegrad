@@ -20,7 +20,7 @@ class ImageManager:
         :param image: tensor to be used as an image
         :return:
         """
-        image = np.linalg.norm(image, axis=2)
+        image = np.linalg.norm(image, axis=0)
         image -= image.min()
         image /= image.max()
         return image
@@ -37,13 +37,14 @@ class ImageManager:
         os.mkdir(full_name)
 
     def save_image(self,
-                   image: torch.Tensor,
+                   image_tensor: torch.Tensor,
                    directory: str,
                    filename: str,
                    title: str = "",
                    normalize: Optional[bool] = None):
         if normalize is None:
             normalize = self.normalize_image
+        image = image_tensor.cpu()
         self.prepare_dir(directory)
         filename = '/'.join([self.base_dir, directory, filename])
         channels = image.shape[0]
