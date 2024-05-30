@@ -36,6 +36,8 @@ class LinearWrapper(BaseWrapper):
             return y
         try:
             lb, prev_y, ub = x
+            self.debug_print(f"input difference: "
+                             f"{torch.sum(torch.lt((ub-lb), 0))}")
             y = self.bounds(lb, prev_y, ub)
             self.debug_print(f"difference: "
                              f"{torch.sum(torch.lt((y[2]-y[0]), 0))}")
