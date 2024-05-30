@@ -20,7 +20,7 @@ class LinearWrapper(BaseWrapper):
         # self.pos_layer = pos_layer
 
         with torch.no_grad():
-            self.neg_weights = adaptive_cuda(-F.relu(-original_module.weight.data))
+            self.neg_weights = -adaptive_cuda(-F.relu(-original_module.weight.data))
             self.pos_weights = adaptive_cuda(F.relu(original_module.weight.data))
             self.bias = adaptive_cuda(original_module.bias.clone())
 
