@@ -116,8 +116,7 @@ class ReluWrapper(Rangegrad_ReluWrapper):
             return super().forward(x)
         # now we can assume explin propagation, which also requires the previous module
         xlb, x_, xub = x
-        with torch.no_grad():
-            lb, ub = self._scale_bounds(x_, xlb, xub)
+        lb, ub = self._scale_bounds(x_, xlb, xub)
         # xiM = ub
         # xim = lb
 
