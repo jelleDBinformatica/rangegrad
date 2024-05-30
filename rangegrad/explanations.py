@@ -27,7 +27,8 @@ def rangegrad_explanation(
     x1 = model(x)
     x1.retain_grad()
     if target is None:
-        target = torch.argmax(x1).item()
+        with torch.no_grad():
+            target = torch.argmax(x1).item()
     y = torch.flatten(x1)[target]
 
     OH = adaptive_cuda(torch.zeros((1, 1000)))

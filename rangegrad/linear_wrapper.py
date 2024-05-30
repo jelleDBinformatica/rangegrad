@@ -31,16 +31,14 @@ class LinearWrapper(BaseWrapper):
             self.debug_print(f'weight error: {tn}, {tp}')
 
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):
+        # note: avgpool layer seems to mess up bounds? Not sure why exactly
+        # edit: issue was dropout layer, make sure to set mode to eval()
         if self.rangegrad_mode == "forward":
             y = self.original_module(x)
             return y
         try:
             lb, prev_y, ub = x
-            self.debug_print(f"input difference: "
-                             f"{torch.sum(torch.lt((ub-lb), 0))}")
             y = self.bounds(lb, prev_y, ub)
-            self.debug_print(f"difference: "
-                             f"{torch.sum(torch.lt((y[2]-y[0]), 0))}")
         except Exception as e:
             print(e)
             raise Exception("error occurred in linear bound propagation")
