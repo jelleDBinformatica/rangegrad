@@ -56,9 +56,11 @@ class LinearWrapper(BaseWrapper):
         #     self.debug_print(f'adding bias of {self.original_module.bias} to lb')
         #     olb -= self.original_module.bias
         olb = F.linear(lower_input, self.pos_weights, self.bias) + F.linear(upper_input, self.neg_weights)
-        f = self.bias if self.bias is not None else 0
+        f = 0
+        if self.bias is not None:
+            f = self.bias
         self.debug_print(f'sanity_check: '
-                         f'{olb-(F.linear(lower_input, self.pos_weights) + F.linear(upper_input, self.neg_weights)) + f}')
+                         f'{olb-(f + F.linear(lower_input, self.pos_weights) + F.linear(upper_input, self.neg_weights))}')
         return olb
 
     def upper_bound(self, lower_input: torch.Tensor, upper_input: torch.Tensor):
