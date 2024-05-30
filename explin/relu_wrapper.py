@@ -116,7 +116,8 @@ class ReluWrapper(Rangegrad_ReluWrapper):
             return super().forward(x)
         # now we can assume explin propagation, which also requires the previous module
         xlb, x_, xub = x
-        lb, ub = self._scale_bounds(x_, xlb, xub)
+        with torch.no_grad():
+            lb, ub = self._scale_bounds(x_, xlb, xub)
         # xiM = ub
         # xim = lb
 
@@ -136,15 +137,16 @@ class ReluWrapper(Rangegrad_ReluWrapper):
         # ux = torch.max(ub)
         # lx = torch.min(lb)
 
-        slope = adaptive_cuda(torch.zeros(x_.shape)) + ub
+        with torch.no_grad():
+            slope = adaptive_cuda(torch.zeros(x_.shape)) + ub
 
-        slope_denom = ub - lb
-        slope = slope / slope_denom
-        u_slope = torch.nan_to_num(slope, 0, 1, 0)
-        u_slope = torch.clamp(u_slope, 0, 1)
-        self.debug_print(f'slope range: {u_slope.max()}, {u_slope.min()}')
+            slope_denom = ub - lb
+            slope = slope / slope_denom
+            u_slope = torch.nan_to_num(slope, 0, 1, 0)
+            u_slope = torch.clamp(u_slope, 0, 1)
+            self.debug_print(f'slope range: {u_slope.max()}, {u_slope.min()}')
 
-        bias_enabler = torch.gt(ub, 0) * torch.le(lb, 0)
+            bias_enabler = torch.gt(ub, 0) * torch.le(lb, 0)
         # bias_enabler = torch.gt(x_, 0)
         u_bias = - u_slope * lb * bias_enabler
 
