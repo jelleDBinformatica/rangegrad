@@ -46,7 +46,6 @@ def rangegrad_explanation(
 
     lb = x - diff_matrix
     ub = x + diff_matrix
-    print(lb, ub, diff_matrix)
 
 
     bounds = model((lb, x, ub))
@@ -54,6 +53,7 @@ def rangegrad_explanation(
     f = (bounds[2] - bounds[0])
 
     f.backward(OH)
+    print(lb.grad, ub.grad)
     grad_diff = diff_matrix.grad.data.squeeze().detach()
 
     return grad_diff
