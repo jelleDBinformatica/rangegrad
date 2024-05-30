@@ -20,15 +20,14 @@ class LinearWrapper(BaseWrapper):
         # self.pos_layer = pos_layer
         self.bias = None
 
-        with torch.no_grad():
-            self.neg_weights = adaptive_cuda(-F.relu(-original_module.weight.data))
-            self.pos_weights = adaptive_cuda(F.relu(original_module.weight.data))
-            if original_module.bias is not None:
-                self.bias = adaptive_cuda(original_module.bias.clone())
+        self.neg_weights = adaptive_cuda(-F.relu(-original_module.weight.data))
+        self.pos_weights = adaptive_cuda(F.relu(original_module.weight.data))
+        if original_module.bias is not None:
+            self.bias = adaptive_cuda(original_module.bias.clone())
 
-            tn = torch.sum(torch.gt(self.neg_weights, 0))
-            tp = torch.sum(torch.lt(self.pos_weights, 0))
-            self.debug_print(f'weight error: {tn}, {tp}')
+        tn = torch.sum(torch.gt(self.neg_weights, 0))
+        tp = torch.sum(torch.lt(self.pos_weights, 0))
+        self.debug_print(f'weight error: {tn}, {tp}')
 
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):
         # note: avgpool layer seems to mess up bounds? Not sure why exactly
@@ -74,10 +73,9 @@ class LinearWrapper(BaseWrapper):
 
     def conv_bounds(self, lower_input: torch.Tensor, x: torch.Tensor, upper_input: torch.Tensor):
         # positive weights
-        with torch.no_grad():
-            W_p = F.relu(self.original_module.weight)
-            # OPPOSITE of negative weights
-            W_n = F.relu(-self.original_module.weight)
+        W_p = F.relu(self.original_module.weight)
+        # OPPOSITE of negative weights
+        W_n = F.relu(-self.original_module.weight)
 
         # conv_module
         cm = self.original_module
