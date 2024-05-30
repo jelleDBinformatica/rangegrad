@@ -28,7 +28,7 @@ class Model1(nn.Module):
 
 
 x = torch.Tensor([[2, 1]])
-x = torch.autograd.Variable(x)
+x = adaptive_cuda(torch.autograd.Variable(x))
 x.requires_grad = True
 x.retain_grad()
 
@@ -42,12 +42,13 @@ outputs_per_model = {
 
 if __name__ == "__main__":
     for constr, outputs in outputs_per_model.items():
-        model: ModuleWrapper = translate_any_model(constr())
+        model: ModuleWrapper = adaptive_cuda(translate_any_model(constr()))
         # model.set_debug(True)
 
         y = model(x)
         print(y)
-        model.set_to_explin()
+        model.set_to_bounds()
+        model.set_debug(True)
         lb, _, ub = model.forward((xlb, x, xub))
         lb.retain_grad()
         ub.retain_grad()

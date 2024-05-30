@@ -18,11 +18,13 @@ class LinearWrapper(BaseWrapper):
         # neg_layer, pos_layer = split_layer(original_module)
         # self.neg_layer = neg_layer
         # self.pos_layer = pos_layer
+        self.bias = None
 
         with torch.no_grad():
             self.neg_weights = adaptive_cuda(-F.relu(-original_module.weight.data))
             self.pos_weights = adaptive_cuda(F.relu(original_module.weight.data))
-            self.bias = adaptive_cuda(original_module.bias.clone())
+            if original_module.bias is not None:
+                self.bias = adaptive_cuda(original_module.bias.clone())
 
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):
         if self.rangegrad_mode == "forward":
@@ -54,6 +56,9 @@ class LinearWrapper(BaseWrapper):
         #     self.debug_print(f'adding bias of {self.original_module.bias} to lb')
         #     olb -= self.original_module.bias
         olb = F.linear(lower_input, self.pos_weights, self.bias) + F.linear(upper_input, self.neg_weights)
+        f = self.bias if self.bias is not None else 0
+        self.debug_print(f'sanity_check: '
+                         f'{olb-(F.linear(lower_input, self.pos_weights) + F.linear(upper_input, self.neg_weights)) + f}')
         return olb
 
     def upper_bound(self, lower_input: torch.Tensor, upper_input: torch.Tensor):
