@@ -26,6 +26,7 @@ def rangegrad_explanation(
     model.zero_grad()
     if target is None:
         with torch.no_grad():
+            model.set_to_forward()
             x1 = model(x)
             target = torch.argmax(x1).item()
 
@@ -48,9 +49,9 @@ def rangegrad_explanation(
 
     bounds = model((lb, x, ub))
 
-    f = torch.sum((bounds[2] - bounds[0]) * OH)
+    f = (bounds[2] - bounds[0])
 
-    f.backward()
+    f.backward(OH)
     grad_diff = diff_matrix.grad.data.squeeze().detach()
 
-    return grad_diff.detach()
+    return grad_diff
