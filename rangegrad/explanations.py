@@ -18,9 +18,9 @@ def rangegrad_explanation(
 ):
     if scaling_factor is not None:
         model.set_scaling_factor(factor=scaling_factor)
-    x = torch.autograd.Variable(x)
-    x.requires_grad = True
-    x.retain_grad()
+    # x = torch.autograd.Variable(x)
+    # x.requires_grad = True
+    # x.retain_grad()
     x = adaptive_cuda(x)
 
     model.zero_grad()
@@ -55,7 +55,6 @@ def rangegrad_explanation(
     f = (bounds[2] - bounds[0])
 
     f.backward(OH)
-    print(lb.grad, ub.grad)
     grad_diff = diff_matrix.grad.data.squeeze().detach()
 
     return grad_diff
