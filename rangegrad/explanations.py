@@ -43,7 +43,7 @@ def rangegrad_explanation(
 
     diff_matrix = torch.full(x.shape, float(bound_range), requires_grad=True)
     diff_matrix = adaptive_cuda(diff_matrix)
-    # diff_matrix.retain_grad()
+    diff_matrix.retain_grad()
 
     lb = x - diff_matrix
     ub = x + diff_matrix
