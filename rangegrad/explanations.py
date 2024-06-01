@@ -14,7 +14,8 @@ def rangegrad_explanation(
         bound_range: float,
         scaling_factor: Optional[float] = None,
         target: Optional[int] = None,
-        explin_override: bool = False
+        explin_override: bool = False,
+        num_classes: int = 1000
 ):
     if scaling_factor is not None:
         model.set_scaling_factor(factor=scaling_factor)
@@ -30,7 +31,7 @@ def rangegrad_explanation(
             x1 = model(x)
             target = torch.argmax(x1).item()
 
-    OH = adaptive_cuda(torch.zeros((1, 1000)))
+    OH = adaptive_cuda(torch.zeros((1, num_classes)))
     OH[0, target] = 1
 
     model.zero_grad()
