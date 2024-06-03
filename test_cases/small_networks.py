@@ -11,8 +11,8 @@ from utils.various import adaptive_cuda
 class Model1(nn.Module):
     def __init__(self):
         super(Model1, self).__init__()
-        self.lin1 = nn.Linear(2, 2, bias=True)
-        bias = torch.Tensor([1, 1])
+        self.lin1 = adaptive_cuda(nn.Linear(2, 2, bias=True))
+        bias = (torch.Tensor([1, 1]))
         self.lin2 = nn.Linear(2, 1, bias=False)
         self.lin1.load_state_dict({"weight": torch.Tensor([[1, 2], [-3, 4]]),
                                    "bias": bias})
@@ -28,13 +28,15 @@ class Model1(nn.Module):
 
 
 x = torch.Tensor([[2, 1]])
-x = adaptive_cuda(torch.autograd.Variable(x))
+x = adaptive_cuda(x)
 x.requires_grad = True
 x.retain_grad()
 
-e = 1
-xlb = x - e
-xub = x + e
+val = 1.
+e = adaptive_cuda(torch.full(x.shape, val, requires_grad=True))
+e.retain_grad()
+xlb = adaptive_cuda(x - e)
+xub = adaptive_cuda(x + e)
 
 outputs_per_model = {
     Model1: [torch.Tensor([]), torch.Tensor([])]
@@ -43,28 +45,27 @@ outputs_per_model = {
 if __name__ == "__main__":
     for constr, outputs in outputs_per_model.items():
         model: ModuleWrapper = adaptive_cuda(translate_any_model(constr()))
-        # model.set_debug(True)
+        model.set_debug(False)
 
         y = model(x)
         print(y)
-        model.set_to_bounds()
-        model.set_debug(True)
+        model.set_to_explin()
         lb, _, ub = model.forward((xlb, x, xub))
         lb.retain_grad()
         ub.retain_grad()
 
-        lb.backward(torch.ones_like(lb))
+        lb.backward(adaptive_cuda(torch.ones_like(lb)))
         print(lb, x.grad)
 
-        lbg = copy.deepcopy(x.grad.detach())
+        lbg = copy.deepcopy(e.grad.detach())
 
         lb, _, ub = model.forward((xlb, x, xub))
-        ub[0].backward()
-        print(ub, x.grad)
-        ubg = copy.deepcopy(x.grad.detach())
+        ub.backward(adaptive_cuda(torch.ones_like(lb)))
+        print(ub, e.grad)
+        ubg = copy.deepcopy(e.grad.detach())
 
         print(ubg, lbg)
         print(ubg - lbg)
 
         model = adaptive_cuda(model)
-        bleh = rangegrad_explanation(model, x, e)
+        bleh = rangegrad_explanation(model, x, val, num_classes=1)
