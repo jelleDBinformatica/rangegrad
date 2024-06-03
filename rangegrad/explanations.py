@@ -8,8 +8,30 @@ from rangegrad.vgg_translation import TranslatedVGG
 from utils.various import adaptive_cuda
 
 
+def gradient_explanation(
+        model: ModuleWrapper,
+        x: torch.Tensor,
+        target: Optional[int] = None,
+        num_classes: int = 1000
+):
+    model.set_to_forward()
+    model.zero_grad()
+    x = adaptive_cuda(x)
+    x.requires_grad = True
+    y = model(x)
+    if target is None:
+        with torch.no_grad():
+            target = torch.argmax(y).item()
+
+    OH = adaptive_cuda(torch.zeros((1, num_classes))).int()
+    OH[0, target] = 1
+    y.backward(OH)
+    grad = x.grad.data.squeeze().detach()
+    return grad
+
+
 def rangegrad_explanation(
-        model: TranslatedVGG,
+        model: ModuleWrapper,
         x: torch.Tensor,
         bound_range: float,
         scaling_factor: Optional[float] = None,
