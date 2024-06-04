@@ -51,9 +51,12 @@ class Rangegrad_ReluWrapper(BaseWrapper):
     def _scale_bounds(self, prev_y: torch.Tensor, lb: torch.Tensor, ub: torch.Tensor) -> Tuple[
         torch.Tensor, torch.Tensor]:
         specific_factor = self.scaling_func(self, lb, prev_y, ub, self.factor)
-        new_lb = (specific_factor * lb) + ((1 - specific_factor) * prev_y)
-        new_ub = (specific_factor * ub) + ((1 - specific_factor) * prev_y)
-        return new_lb, new_ub
+        # lb = (specific_factor * lb) + ((1 - specific_factor) * prev_y)
+        # ub = (specific_factor * ub) + ((1 - specific_factor) * prev_y)
+
+        lb += (prev_y - lb) * (1 - specific_factor)
+        ub += (prev_y - ub) * (1 - specific_factor)
+        return lb, ub
 
     def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor]]):
         assert self.rangegrad_mode in ["forward",
