@@ -13,13 +13,9 @@ def GGC_explanation(net: nn.Module, output_layer: nn.Module,
                     y: int,
                     normalize: bool = False):
     expl = GuidedGradCam(net, output_layer)
-    print("0", expl)
     explGuidedGradCam = expl.attribute(x, target=y)
-    print("1", explGuidedGradCam)
     explGuidedGradCam = explGuidedGradCam.detach().cpu().numpy()
-    print("2", explGuidedGradCam)
     explGuidedGradCam = explGuidedGradCam.sum(axis=0)
-    print("3", explGuidedGradCam)
     if normalize:
         explGuidedGradCam = np.linalg.norm(explGuidedGradCam, axis=0)
 

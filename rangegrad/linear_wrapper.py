@@ -14,7 +14,7 @@ class LinearWrapper(BaseWrapper):
         super(LinearWrapper, self).__init__()
         if type(original_module) not in [nn.Linear, nn.Conv2d]:
             raise TypeError(f"original layer type {type(original_module)} not suitable for wrapper.")
-        self.original_module = original_module
+        self.original_module = adaptive_cuda(original_module)
         # neg_layer, pos_layer = split_layer(original_module)
         # self.neg_layer = neg_layer
         # self.pos_layer = pos_layer
